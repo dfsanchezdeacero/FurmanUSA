@@ -50,5 +50,5 @@ SELECT * FROM MSWSch.MSWTraOrdenCArgaEscaneo4 WHERE IdPedido = 2398178 AND IdPro
 EXEC [MSWSch].[MSW_CU99_Pag50_ObtenerProduccionFacturadaDEACEROFurman_Sel]
 	@pnAnioMesInicio		= 202301
 	,@pnAnioMesFin			= 202312
-	,@nIdFactura			= 2401489
+	,@nIdFactura			= 2395643
 	,@pnClaProveedor		= 275
