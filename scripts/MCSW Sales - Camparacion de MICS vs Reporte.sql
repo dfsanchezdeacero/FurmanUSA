@@ -60,6 +60,7 @@ EXEC [MSWSch].[MSW_CU423_Pag12_Grid_GridGenerico_Sel]
 ,@pnVendor				 = 275
 ,@pnDepto				 = 0
 ,@pnEsDebug				= 2
+,@pnSoloAlamabreMx		= 0
 
 SELECT 
 IdFactura
@@ -86,11 +87,9 @@ SELECT DISTINCT
 INTO #Totaldiff
 FROM #tmpResultsMICSDistinct M 
 INNEr JOIN #tmpResultsReportDictinct R  ON M.IdFactura = R.IdFactura									  
-WHERE (M.Kilos - R.Kilos) <> 0 OR M.Cajas - R.Cajas <> 0 
 ORDER BY M.IdFactura
 
-SELECT * FROm #Totaldiff WHERE DiffCajas <> 0 
-
+SELECT * FROM #Totaldiff WHERE DiffCajas <> 0 AND DiffKilos <> 0
 SELECT SUM(DiffKilos), SUM(DiffCajas) FROM #Totaldiff
 
 DROP TABLE #tmpResultsMICS
