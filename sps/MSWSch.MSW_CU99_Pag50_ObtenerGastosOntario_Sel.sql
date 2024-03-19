@@ -27,7 +27,7 @@ BEGIN
 	INTO #tmpAnioMesGastosOntario
 	FROM [MSWSch].[MSWCfgFurmanCuentaContableGastosOntario] FO
 	INNER JOIN [MSWSch].[MswTraCuentaContable9] CC ON FO.IdCuentaContable = CC.IdCuentaContable
-	LEFT JOIN [MSWSch].[MswTraSaldosEng9Vw] S ON FO.IdCuentaContable = S.ClaCuenta
+	LEFT JOIN [MSWSch].[MswTraSaldosEng9] S ON FO.IdCuentaContable = S.ClaCuenta
 	WHERE (S.AnioMes / 100) = @pnAnio
 	GROUP BY 
 		FO.IdCuentaContable

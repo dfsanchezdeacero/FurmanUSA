@@ -1,8 +1,20 @@
+DECLARE @pnAnioMesInicio INT = 202301, @pnAnioMesFin INT = 202312
+	SELECT
+		SUM(Cargos - Creditos)		
+	FROM [MSWSch].[MSWCfgFurmanCuentaContableGastosOntario] FO
+	INNER JOIN [MSWSch].[MswTraCuentaContable9] CC ON FO.IdCuentaContable = CC.IdCuentaContable
+	LEFT JOIN [MSWSch].[MswTraSaldosEng9] S ON FO.IdCuentaContable = S.ClaCuenta
+	WHERE (@pnAnioMesInicio IS NULL OR (@pnAnioMesInicio IS NOT NULL AND S.AnioMes >= @pnAnioMesInicio))
+		AND	(@pnAnioMesFin IS NULL OR (@pnAnioMesFin IS NOT NULL AND S.AnioMes <= @pnAnioMesFin))	
+
+SELECT * FROM [MSWSch].[MswTraSaldosEng9] WITH(NOLOCK) WHERe ClaCuenta = 1668 AND AnioMes >= 202301 AND AnioMes <= 202312
+
+
+SELECT * FROM [MSWSch].[MSWCfgFurmanCuentaContableGastosOntario] 
+
 SELECT * FROM MSWSch.MswTraCuentaContable9 WITH(NOLOCK) WHERE ClaNiv1 =6047  AND ClaNiv2 = 20 AND ClaNiv3 = 120
 
 SELECT * FROM [MSWSch].[MswTraSaldosEng9Vw] WITH(NOLOCK) WHERe ClaCuenta = 775 ORDER BY AnioMes DESC
-
-SELECT TOP 10 * FROM [MSWSch].[MswTraSaldosEng9] WITH(NOLOCK) WHERe ClaCuenta = 775 --ORDER BY FechaUltimaMod DESC
 
 
  SELECT * FROM [MSWSch].[MSWCfgFurmanCuentaContableGastosOntario]
