@@ -11,7 +11,7 @@ BEGIN
        
      SELECT 
 		YearMonth = AnioMes	
-		,InterestRate = PorcInteres	
+		,InterestExpRate = PorcInteres	
 		,BajaLogica	
 		,FechaBajaLogica	
 		,FechaUltimaMod	

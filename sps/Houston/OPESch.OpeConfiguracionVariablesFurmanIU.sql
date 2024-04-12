@@ -5,7 +5,6 @@
 -- =============================================
 ALTER PROCEDURE [OPESch].[OpeConfiguracionVariablesFurmanIU]
 	@pnAnio					   INT,
-	@pnProcInteres			   NUMERIC(22,6),
 	@pnPorcGastoVentaIndirecta NUMERIC(22,6),
 	@pnComisionAgenteVenta	   NUMERIC(22,6),
 	@pnComisionManagerVenta    NUMERIC(22,6),
