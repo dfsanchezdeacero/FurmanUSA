@@ -13,7 +13,7 @@ ALTER PROCEDURE [OPESch].[OpeConfiguracionConceptoFurmanIU]
 AS
 BEGIN
 	SET NOCOUNT ON
-        
+        SELECT 1 FROM [OPESch].[OPERelConceptoFurmanCrc] WHERE IdConceptoFurman = 1 AND ClaElementoCosto = 3
 		IF NOT EXISTS (SELECT 1 FROM [OPESch].[OPERelConceptoFurmanCrc] WHERE IdConceptoFurman = @pnIdConceptoFurman AND ClaElementoCosto = @pnClaElementoCosto)
 		BEGIN
 			DECLARE @pnClaCrcEnCurso INT
