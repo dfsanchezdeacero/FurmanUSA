@@ -1,0 +1,49 @@
+EXEC [OPESch].[OPECalcularReporteFurmanVentasPorPeriodo]
+ @pnAnioMesInicio		= 202301
+,@pnAnioMesFin			= 202312
+
+
+CREATE TABLE #tmpTonsProdPOR
+	(
+		PRODCODU VARCHAR(100)
+		,PRODCODU2 INT
+		,DESCRIP  VARCHAR(500)
+		,CRC INT
+		,CRCN VARCHAR(500)
+		,DEPT INT
+		,DEPTN VARCHAR(500)
+		,CONNUMU VARCHAR(200)
+		,PRODQTY NUMERIC(22,8)
+		,FURMAT  NUMERIC(22,8)
+		,FURLAB  NUMERIC(22,8)
+		,FUROH   NUMERIC(22,8)
+		,FURPACK NUMERIC(22,8)
+		,FURCOM  NUMERIC(22,8)
+		,FURGNA  NUMERIC(22,8)
+		,FURINT  NUMERIC(22,8)
+		,TOTFGM  NUMERIC(22,8)
+	)
+
+
+INSERT INTO #tmpTonsProdPOR (PRODCODU, PRODCODU2, DESCRIP, CRC, CRCN, DEPT, DEPTN, CONNUMU, PRODQTY,FURMAT,FURLAB,FUROH,FURPACK,FURCOM,FURGNA,FURINT,TOTFGM)	
+
+	EXEC [OpeSch].[OpeCalcularReporteFurmanPorPeriodo]  @pnAnioMesInicio		= 202301
+,@pnAnioMesFin			= 202312
+
+SELECT * FROm #tmpTonsProdPOR
+
+DROP TABLE #tmpTonsProdPOR
+
+
+SELECT PesoTeoricoKgs,* FROM OpeSch.OpeArtCatArticuloVw WHERE ClaArticulo = 542010
+SELECT PesoTeoricoKgs,* FROM OpeSch.OpeArtCatArticuloVw WHERE ClaArticulo = 501815
+
+SELECT PrecioUnitarioFactura,* FROM OPESch.OpeTraFacturaDetVw 
+WHERE IdFactura = 168011869
+AND ClaArticulo = 547056
+
+SELECT CantEmbarcada, * FROM OPERACION.OPESCH.[OPETraMovEntSalDet] 
+WHERE IdFabricacion = 24191903 
+AND ClaArticulo = 547056
+
+SELECT 1/1.0
