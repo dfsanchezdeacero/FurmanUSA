@@ -41,6 +41,7 @@ BEGIN
 			,[ClaTipoGasto]	        INT	
 			,ImpManufacturaDir		NUMERIC(22,8)
 			,ImpManufacturaInd		NUMERIC(22,8)
+			,ImpManufacturaNoDist   NUMERIC(22,8)
 			,TonsProd				NUMERIC(22,8)
 
 		)
@@ -107,6 +108,7 @@ BEGIN
 			,ClaTipoGasto
 			,ImpManufacturaDir
 			,ImpManufacturaInd
+			,ImpManufacturaNoDist
 			,TonsProd
 			,FechaUltimaMod
 			,NombrePcMod
@@ -122,6 +124,7 @@ BEGIN
 			,ClaTipoGasto
 			,ImpManufacturaDir
 			,ImpManufacturaInd
+			,ImpManufacturaNoDist
 			,TonsProd
 			,GETDATE()
 			,@psNombrePcMod

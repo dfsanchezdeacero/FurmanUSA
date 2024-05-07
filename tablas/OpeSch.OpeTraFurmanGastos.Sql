@@ -7,6 +7,7 @@ CREATE TABLE [OPESch].[OPETraFurmanGastos](
 	[ClaTipoGasto] [int] NOT NULL,
 	[ImpManufacturaDir]	NUMERIC(22,8),
 	[ImpManufacturaInd]	NUMERIC(22,8),
+	[ImpManufacturaNoDist] NUMERIC(22,8),
 	[TonsProd]			NUMERIC(22,8),
 	[FechaUltimaMod] [datetime] NOT NULL,
 	[NombrePcMod] [varchar](64) NOT NULL,
@@ -23,5 +24,3 @@ GO
 
 ALTER TABLE [OPESch].[OPETraFurmanGastos] ADD  DEFAULT (host_name()) FOR [NombrePcMod]
 GO
-
-

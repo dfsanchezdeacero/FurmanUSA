@@ -1,18 +1,20 @@
-WOKRING IN PROGRESS [OPESch].[OpeCalcularReporteFurmanPorPeriodo]
+--WOKRING IN PROGRESS [OPESch].[OpeCalcularReporteFurmanPorPeriodo]
 
 DECLARE  @pnAnioMesInicio		INT = 202301
 ,@pnAnioMesFin			INT = 202312
 ,@pnDpto                INT = NULL
 ,@pnClaUbicacion		INT = 65
-,@pnEsDebug             INT = 0
+,@pnEsDebug             INT = 1
 ,@nFactorConv			NUMERIC(22,2) = 1000.00
 ,@sTiposGastoFurpack VARCHAR(500)
 ,@nFURGNA               NUMERIC(22,8)
 ,@nFURINT               NUMERIC(22,8)
+,@nCRCEnRevison INT = 4133
+--4208
+-- 4133 Checked
+-- 4033 Checked 
 
-	--SELECT * FROM [OPESch].[OPECatFurmanDepartments]
-	--SELECT * FROM [OPESch].[OPERelCRCFurmanDepartments]
-	--SELECT * FROM [OPESch].[OpeCatFurmanConfiguracion]
+
 	SELECT @sTiposGastoFurpack = sValor1 --410,411,705,872
 	FROM [OPESch].[OpeCatFurmanConfiguracion] 
 	WHERE ClaConfiguracion = 4		
@@ -89,6 +91,7 @@ DECLARE  @pnAnioMesInicio		INT = 202301
 	AND  (@pnAnioMesFin IS NULL OR (@pnAnioMesFin IS NOT NULL AND  P.ClaAnioMes <= @pnAnioMesFin))	
 	AND P.ClaUbicacion = @pnClaUbicacion
 	AND P.ClaTipoGasto NOT IN (SELECT ClaTipoGasto FROM #tmpGastoFurpack)
+	AND  (@nCRCEnRevison IS NULL OR (@nCRCEnRevison IS NOT NULL AND  P.ClaCrc = @nCRCEnRevison))	
 	GROUP BY P.ClaAnioMes
 		,P.ClaUbicacion
 		,P.ClaCrc
@@ -110,6 +113,7 @@ DECLARE  @pnAnioMesInicio		INT = 202301
 	AND  (@pnAnioMesFin IS NULL OR (@pnAnioMesFin IS NOT NULL AND  P.ClaAnioMes <= @pnAnioMesFin))	
 	AND P.ClaUbicacion = @pnClaUbicacion
 	AND P.ClaTipoGasto IN (SELECT ClaTipoGasto FROM #tmpGastoFurpack)
+	AND  (@nCRCEnRevison IS NULL OR (@nCRCEnRevison IS NOT NULL AND  P.ClaCrc = @nCRCEnRevison))	
 	GROUP BY P.ClaAnioMes
 		,P.ClaUbicacion
 		,P.ClaCrc
@@ -140,7 +144,7 @@ DECLARE  @pnAnioMesInicio		INT = 202301
 	AND  (@pnAnioMesFin IS NULL OR (@pnAnioMesFin IS NOT NULL AND  P.ClaAnioMes <= @pnAnioMesFin))	
 	AND P.ClaUbicacion = @pnClaUbicacion 
 	--AND  (@pnDpto IS NULL OR (@pnDpto IS NOT NULL AND F.ClaFurmanDepartment = @pnDpto))
-	--AND P.ClaCrc = 4133
+	AND  (@nCRCEnRevison IS NULL OR (@nCRCEnRevison IS NOT NULL AND  P.ClaCrc = @nCRCEnRevison))	
 	--AND P.ClaElementoCosto IN (1,3)
 	
 	/*Quitamos los Costos y nos quedamos unicamente con la Produccion CRC a nivel articulo*/
@@ -197,8 +201,10 @@ DECLARE  @pnAnioMesInicio		INT = 202301
 	SELECT 		 
 		G.ClaCrc			
 		,GastoAsignado = SUM(G.GastoAsignado)
-		,TonsProd = SUM(Pr.TonsProd) 
-		,FURMAT = SUM(G.GastoAsignado)/(SUM(Pr.TonsProd) * @nFactorConv)
+		--,TonsProd = SUM(Pr.TonsProd) 
+		,Pr.TonsProd
+		--,FURMAT = SUM(G.GastoAsignado)/(SUM(Pr.TonsProd) * @nFactorConv)
+		,FURMAT = SUM(G.GastoAsignado)/(Pr.TonsProd * @nFactorConv)
 	INTO #tmpFURMAT
 	FROM #tmpGastosPropiosAsignados G
 	INNER JOIN #tmpProdCrc Pr ON G.ClaCrc = Pr.ClaCrc
@@ -206,31 +212,35 @@ DECLARE  @pnAnioMesInicio		INT = 202301
 								 FROM [OPESch].[OPERelConceptoFurmanCrc] Rel
 								 WHERE IdConceptoFurman = 1 --FURMAT
 								)
-	GROUP BY G.ClaCrc
+	GROUP BY G.ClaCrc,Pr.TonsProd
 
 	IF @pnEsDebug = 1 SELECT 'FURMAT By CRC' ,* FROM #tmpFURMAT
 
 	SELECT 		 
 		G.ClaCrc			
 		,GastoPropio = SUM(G.GastoPropio)
-		,TonsProd = SUM(Pr.TonsProd) 
-		,FURLAB = SUM(G.GastoPropio)/(SUM(Pr.TonsProd) * @nFactorConv)
-	INTO #tmpFULAB
+		--,TonsProd = SUM(Pr.TonsProd)
+		,Pr.TonsProd
+		--,FURLAB = SUM(G.GastoPropio)/(SUM(Pr.TonsProd) * @nFactorConv)
+		,FURLAB = SUM(G.GastoPropio)/(Pr.TonsProd * @nFactorConv)
+		INTO #tmpFULAB
 	FROM #tmpGastosPropiosAsignados G
 	INNER JOIN #tmpProdCrc Pr ON G.ClaCrc = Pr.ClaCrc
 	WHERE G.ClaElementoCosto IN (SELECT ClaElementoCosto --Elemento de Costo
 								 FROM [OPESch].[OPERelConceptoFurmanCrc] Rel
 								 WHERE IdConceptoFurman = 2 --FURLAB
 								)
-	GROUP BY G.ClaCrc
+	GROUP BY G.ClaCrc,Pr.TonsProd
 
 	IF @pnEsDebug = 1 SELECT 'FURLAB By CRC' ,* FROM #tmpFULAB
 
 	SELECT 		 
 		G.ClaCrc			
 		,GastoPropio = SUM(G.GastoPropio)
-		,TonsProd = SUM(Pr.TonsProd) 
-		,FUROH = SUM(G.GastoPropio)/(SUM(Pr.TonsProd) * @nFactorConv)
+		--,TonsProd = SUM(Pr.TonsProd) 
+		,Pr.TonsProd
+		--,FUROH = SUM(G.GastoPropio)/(SUM(Pr.TonsProd) * @nFactorConv)
+		,FUROH  = SUM(G.GastoPropio)/(Pr.TonsProd * @nFactorConv)
 	INTO #tmpFUROH
 	FROM #tmpGastosPropiosAsignados G
 	INNER JOIN #tmpProdCrc Pr ON G.ClaCrc = Pr.ClaCrc
@@ -239,15 +249,17 @@ DECLARE  @pnAnioMesInicio		INT = 202301
 								 WHERE IdConceptoFurman = 3 --FUROH
 
 								)
-	GROUP BY G.ClaCrc
+	GROUP BY G.ClaCrc,Pr.TonsProd
 
 	IF @pnEsDebug = 1 SELECT 'FUROH By CRC' ,* FROM #tmpFUROH
 
 	SELECT 		 
 		G.ClaCrc			
 		,GastoPropio = SUM(G.GastoPropio)
-		,TonsProd = SUM(Pr.TonsProd) 
+		--,TonsProd = SUM(Pr.TonsProd) 
+		,Pr.TonsProd
 		,FURPACK = SUM(G.GastoPropio)/(SUM(Pr.TonsProd) * @nFactorConv)
+		--,FURPACK = SUM(G.GastoPropio)/(SUM(Pr.TonsProd) * @nFactorConv)
 	INTO #tmpFURPCK
 	FROM #tmpGastosPropiosAsignadosPacking G
 	INNER JOIN #tmpProdCrc Pr ON G.ClaCrc = Pr.ClaCrc
@@ -256,7 +268,7 @@ DECLARE  @pnAnioMesInicio		INT = 202301
 								 WHERE IdConceptoFurman = 4 --FURPACK
 
 								)
-	GROUP BY G.ClaCrc
+	GROUP BY G.ClaCrc,Pr.TonsProd
 
 	IF @pnEsDebug = 1 SELECT 'FURPACK By CRC' ,* FROM #tmpFURPCK
 
@@ -291,7 +303,7 @@ DECLARE  @pnAnioMesInicio		INT = 202301
 		WHERE Cmp.ClaArticulo = Pd.ClaArticulo
 		GROUP BY Are.ConnumConGuiones		
 	) as connumWire
-	WHERE Pd.ClaCrc = 4133
+	WHERE (@nCRCEnRevison IS NULL OR (@nCRCEnRevison IS NOT NULL AND  Pd.ClaCrc = @nCRCEnRevison))	
 	--AND Pd.ClaArticulo	= 270806
 	
 

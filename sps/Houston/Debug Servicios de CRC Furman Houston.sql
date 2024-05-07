@@ -7,10 +7,11 @@
 		,[ClaTipoGasto]	        INT	
 		,ImpManufacturaDir		NUMERIC(22,8)
 		,ImpManufacturaInd		NUMERIC(22,8)
+		,ImpManufacturaNoDist	NUMERIC(22,8)
 		,TonsProd				NUMERIC(22,8)
 
 	)
-
+	/*
 	CREATE TABLE #tmpFurmanProd
 	(
 		[ClaAnioMes]           INT
@@ -26,9 +27,10 @@
 		,[CostoXTonelada]	    NUMERIC(22,8)
 		,[PorcComp]             NUMERIC(22,8)
 	)
+	*/
 
 	DECLARE @AnioMesMaxRegistrado INT --= 2020--2024--2024
-	,@dFechaActual DATETIME = '2023-12-31' --GETDATE() 
+	,@dFechaActual DATETIME = '2024-01-01' --GETDATE() 
 	,@nDiasExtendidosCierreMes INT = 6
 	,@dFechaEjecucionDesde DATETIME
 	,@dFechaEjecucionHasta DATETIME
@@ -41,7 +43,7 @@
 	--FECHA INICIAL POR DEFAULT 2020
 	SELECT 
 		@AnioMesMaxRegistrado = 202301--ISNULL(MAX(ClaAnioMes),202301)
-	FROM [OPESch].[OPETraFurmanProduccion] WITH(NOLOCK)
+	--FROM [OPESch].[OPETraFurmanProduccion] WITH(NOLOCK)
 
 	SELECT @dFechaEjecucionDesde = SUBSTRING(CAST(@AnioMesMaxRegistrado AS VARCHAR(10)), 1,4)+'-'+SUBSTRING(CAST(@AnioMesMaxRegistrado AS VARCHAR(10)), 5,6)+'-01'
 	
@@ -66,13 +68,14 @@
 				Contador = @nContador
 				,nAnioMesEnProceso = @nAnioMesEnProceso
 
-
+			/*
 			INSERT INTO #tmpFurmanProd
 			EXEC [DEAFYSA].[Costos].[CTSSch].[CTSK_CostoManufacturaFurman_Prc] 
 				@nAnioMesEnProceso
 				,65
 				,'Spanish'
 				--, @psClaTipoGastos = @sListaGastos
+			*/
 
 			INSERT INTO #tmpFurmanCostos
 			EXEC [DEAFYSA].[Costos].[CTSSch].[CTS_CU700_Pag1_InterfazProductoCosto_Prc]
@@ -85,15 +88,39 @@
 
 	END
 
+	/*
 	SELECT ClaAnioMes,ClaCrc, ClaElementoCosto, Gasto = SUM(Importe), TonsProd = SUM(ProdTonsArticuloBase)
 	FROM #tmpFurmanProd 
 	WHERE ClaCrc = 4133 AND ClaElementoCosto = 4 --AND ClaAnioMes = 202312
 	GROUP BY ClaAnioMes,ClaCrc, ClaElementoCosto
 	ORDER BY ClaAnioMes
+	*/
 	
-	SELECT ClaAnioMes,ClaCrc,ClaElementoCosto, GastoPropio = SUM(ImpManufacturaDir), GastoAsginado = SUM(ImpManufacturaInd), TonsProd
+	SELECT ClaAnioMes,ClaCrc,ClaElementoCosto, GastoPropio = SUM(ImpManufacturaDir), GastoAsginado = SUM(ImpManufacturaInd), GastoNoDistribuido = SUM(ImpManufacturaNoDist),TonsProd
 	FROM #tmpFurmanCostos 
-	WHERE ClaCrc = 4133 AND ClaElementoCosto = 4 --AND ClaAnioMes = 202312
+	WHERE ClaCrc = 4208 AND ClaElementoCosto = 4 --AND ClaAnioMes = 202312
+	GROUP BY ClaAnioMes,ClaCrc, ClaElementoCosto, TonsProd
+	ORDER BY ClaAnioMes
+
+
+	SELECT ClaAnioMes,ClaCrc,ClaElementoCosto, GastoPropio = SUM(ImpManufacturaDir), GastoAsginado = SUM(ImpManufacturaInd), GastoNoDistribuido = SUM(ImpManufacturaNoDist),TonsProd
+	FROM #tmpFurmanCostos 
+	WHERE ClaCrc = 4208 AND ClaElementoCosto = 4 --AND ClaAnioMes = 202312
+	GROUP BY ClaAnioMes,ClaCrc, ClaElementoCosto, TonsProd
+	ORDER BY ClaAnioMes
+
+
+	
+	SELECT ClaAnioMes,ClaCrc,ClaElementoCosto, GastoPropio = SUM(ImpManufacturaDir), GastoAsginado = SUM(ImpManufacturaInd), GastoNoDistribuido = SUM(ImpManufacturaNoDist),TonsProd
+	FROM #tmpFurmanCostos 
+	WHERE ClaCrc = 4208 AND ClaElementoCosto IN (3,5,7,8,9,97) AND ClaTipoGasto NOT IN (410,411,705,872)	
+	GROUP BY ClaAnioMes,ClaCrc, ClaElementoCosto, TonsProd
+	ORDER BY ClaAnioMes
+
+	SELECT ClaAnioMes,ClaCrc,ClaElementoCosto, GastoPropio = SUM(ImpManufacturaDir), GastoAsginado = SUM(ImpManufacturaInd),TonsProd
+	FROM [OPESch].[OPETraFurmanGastos] 
+	WHERE ClaCrc = 4208 AND ClaElementoCosto IN (3,5,7,8,9,97) AND ClaTipoGasto NOT IN (410,411,705,872)
+	AND ClaAnioMes >= 202301 AND ClaAnioMes <= 202312
 	GROUP BY ClaAnioMes,ClaCrc, ClaElementoCosto, TonsProd
 	ORDER BY ClaAnioMes
 	
