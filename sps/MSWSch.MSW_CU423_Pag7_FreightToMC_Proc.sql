@@ -112,7 +112,7 @@ DECLARE
 							FROM			Ventas.VtaSch.VtaTraFacturaVw f			
 							INNER JOIN		Ventas.VtaSch.VtaTraFacturaDetVw fd		ON fd.IdFactura  = f.IdFactura
 							INNER JOIN		Ventas.VtaSch.VtaCatClienteCuentaVw	cuc ON cuc.ClaClienteCuenta = f.ClaClienteCuenta 
-							WHERE	f.ClaUbicacion IN(35, 11, 197, 345, 65)
+							WHERE	f.ClaUbicacion IN(35, 11, 197, 345)
 							AND YEAR(f.FechaFactura)*100 + MONTH(f.FechaFactura) = ('+ CAST(@nAnioMesEnProceso AS VARCHAR(20)) +')
 							AND cuc.ClaClienteUnico in (' +  CAST(@nClaClienteUnicoMid AS VARCHAR(20)) + ') 												
 							AND f.IdViaje IS NOT NULL
@@ -178,7 +178,7 @@ DECLARE
 				,FechaEntSal		= fle.FechaEntSal
 	INTO #tmpFleteLdoMC
 	FROM		#tmpFacturaProv					fac
-	CROSS APPLY	(
+	OUTER APPLY	(
 					SELECT	TOP 1	 KgsPagar
 									,ImportePagarFinal	
 									,ClaUbicacion
@@ -208,6 +208,9 @@ DECLARE
 				WHERE	IdFactura = fd.IdFactura
 				) ftot
 
+	SELECT '#Tabular/Embarque de Facturas Alambre y Alambron',* FROM #tmpFleteLdoMC ORDER BY FechaFacturaDEA
+
+
 	SELECT ClaUbicacion
 		,IdViaje
 	INTO #tmpViajeRepetido
@@ -216,6 +219,10 @@ DECLARE
 	GROUP BY ClaUbicacion
 		,IdViaje
 	HAVING COUNT(1) > 1
+
+	--Se reparte los kilos y los costos de un viaje en las n facturas, para no duplicar los costos o kilos.
+	-- Viaje Ejemplo 6408
+	SELECT '#tmpViajeRepetido',* FROM #tmpViajeRepetido
 
 	UPDATE f SET CantidadKgs		= CASE WHEN f.IdFacturaDEA = fac.IdFacturaDEA THEN CantidadKgs ELSE 0 END
 				,ImporteFlete		= CASE WHEN f.IdFacturaDEA = fac.IdFacturaDEA THEN ImporteFlete ELSE 0 END
@@ -230,7 +237,7 @@ DECLARE
 				WHERE ClaUbicacion = f.ClaUbicacion
 				AND IdViaje = f.IdViaje
 				ORDER BY NumFacturaDEA
-				)	fac
+				)	fac 
 
 	
 	SELECT '#Tabular/Embarque de Facturas Alambre y Alambron',* FROM #tmpFleteLdoMC ORDER BY FechaFacturaDEA
@@ -276,6 +283,7 @@ DECLARE
 			,HOST_NAME()
 			,1		
 		FROM #tmpFleteLdoMC
+		WHERE ClaUbicacion IS NOT null
 
 
         IF @@TRANCOUNT > 0 AND @nEsAbrirTransaccion = 1
