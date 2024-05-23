@@ -56,7 +56,7 @@ BEGIN
 		FROM	[OpeSch].[OpeFreightFromPasadenaToLocation] WITH(NOLOCK)
 		
 
-	 SELECT @nAnioMesFin = 202312--YEAR(GETDATE())*100 + MONTH(GETDATE()) 
+	 SELECT @nAnioMesFin = YEAR(GETDATE())*100 + MONTH(GETDATE()) 
 
 	IF @pnEsDebug = 1	
 		SELECT @nAnioMesInicio = 202301, @nAnioMesFin = 202301
